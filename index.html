@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UK Critical Minerals - Production Fact Sheets</title>
+
+  <!-- D3.js -->
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-geo-projection@4/dist/d3-geo-projection.min.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- TopoJSON -->
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+
+  <!-- jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
+  <!-- App CSS -->
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="stylesheet" href="css/factsheet.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/charts.css">
+</head>
+<body>
+  <!-- Loading overlay -->
+  <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite">
+    <div class="loading-content">
+      <div class="loading-crown" aria-hidden="true">
+        <svg viewBox="0 0 132 97" width="66" height="49" fill="#000">
+          <path d="M25 0h2v97h-2zM105 0h2v97h-2zM0 30h132v2H0zM0 60h132v2H0zM0 90h132v2H0zM0 0h132v2H0z"/>
+          <path d="M66 4L44 30h44zM22 34l-10 26h20zM110 34l-10 26h20zM66 34L44 60h44z"/>
+        </svg>
+      </div>
+      <h1 class="loading-title">UK Critical Minerals Dashboard</h1>
+      <p class="loading-subtitle">Loading production data from BGS World Mineral Statistics</p>
+      <div class="progress-bar-container">
+        <div id="progress-bar" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100">
+          <div id="progress-fill" class="progress-fill"></div>
+        </div>
+        <p id="progress-text" class="progress-text">Initialising...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Header -->
+  <header class="govuk-header" role="banner">
+    <div class="govuk-header__container">
+      <div class="govuk-header__logo">
+        <span class="govuk-header__logotype-text">UK Critical Minerals</span>
+      </div>
+      <div class="govuk-header__controls">
+        <select id="mineral-select" class="govuk-select govuk-select--header" aria-label="Select mineral"></select>
+        <select id="year-select" class="govuk-select govuk-select--header" aria-label="Select year"></select>
+      </div>
+      <div class="govuk-header__actions">
+        <button id="btn-print" class="govuk-button govuk-button--header" aria-label="Print fact sheet">
+          Print
+        </button>
+        <button id="btn-export-pdf" class="govuk-button govuk-button--header" aria-label="Export as PDF">
+          PDF
+        </button>
+        <button id="btn-export-csv" class="govuk-button govuk-button--header" aria-label="Export as CSV">
+          CSV
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main content: Fact Sheet -->
+  <main class="factsheet" role="main">
+    <!-- Fact sheet title -->
+    <div class="factsheet__title-bar">
+      <h1 id="factsheet-title" class="factsheet__title">LITHIUM — Production Fact Sheet — 2023</h1>
+      <!-- Info banner for Silicon / shared commodities -->
+      <div id="info-banner" class="info-banner" hidden role="alert">
+        <p id="info-banner-text"></p>
+        <button class="info-banner__close" aria-label="Close">&times;</button>
+      </div>
+    </div>
+
+    <!-- Top row: Map + Charts -->
+    <div class="factsheet__grid">
+      <!-- Map (60%) -->
+      <section class="factsheet__map-section">
+        <div class="factsheet__section-header">
+          <h2>World Production Map</h2>
+          <button id="btn-download-map" class="download-btn" aria-label="Download map as SVG" title="Download SVG">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12L3 7h3V1h4v6h3L8 12zM2 14h12v1H2v-1z"/></svg>
+          </button>
+        </div>
+        <div id="map-container" class="map-container" role="img" aria-label="World production choropleth map"></div>
+      </section>
+
+      <!-- Charts (40%) -->
+      <section class="factsheet__charts-section">
+        <!-- Bar chart: Top 10 -->
+        <div class="factsheet__chart-block">
+          <div class="factsheet__section-header">
+            <h3>Top 10 Producers</h3>
+            <button id="btn-download-bar" class="download-btn" aria-label="Download bar chart as PNG" title="Download PNG">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12L3 7h3V1h4v6h3L8 12zM2 14h12v1H2v-1z"/></svg>
+            </button>
+          </div>
+          <div id="bar-chart-container" class="chart-container chart-container--bar">
+            <canvas id="bar-chart" aria-label="Top producers bar chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Doughnut chart: Production Share -->
+        <div class="factsheet__chart-block">
+          <div class="factsheet__section-header">
+            <h3>Production Share</h3>
+            <button id="btn-download-pie" class="download-btn" aria-label="Download doughnut chart as PNG" title="Download PNG">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12L3 7h3V1h4v6h3L8 12zM2 14h12v1H2v-1z"/></svg>
+            </button>
+          </div>
+          <div id="pie-chart-container" class="chart-container chart-container--pie">
+            <canvas id="pie-chart" aria-label="Production share doughnut chart"></canvas>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Bottom row: Tabbed section -->
+    <section class="factsheet__tabs-section">
+      <div class="tab-bar" role="tablist">
+        <button class="tab-btn tab-btn--active" role="tab" aria-selected="true" data-tab="table">Data Table</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="comparison">Comparison</button>
+      </div>
+      <div class="tab-panels">
+        <!-- Data Table tab -->
+        <div id="tab-table" class="tab-panel tab-panel--active" role="tabpanel">
+          <div id="data-table-container"></div>
+        </div>
+        <!-- Comparison tab -->
+        <div id="tab-comparison" class="tab-panel" role="tabpanel" hidden>
+          <div class="comparison-controls">
+            <label class="govuk-label govuk-label--s" for="comparison-country-select">Compare countries over time:</label>
+            <div class="comparison-select-row">
+              <select id="comparison-country-select" class="govuk-select" multiple></select>
+              <span class="govuk-hint">Hold Ctrl/Cmd to select up to 5 countries</span>
+            </div>
+          </div>
+          <div class="factsheet__section-header">
+            <h3>Production Comparison (2014-2023)</h3>
+            <button id="btn-download-comparison" class="download-btn" aria-label="Download comparison chart as PNG" title="Download PNG">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 12L3 7h3V1h4v6h3L8 12zM2 14h12v1H2v-1z"/></svg>
+            </button>
+          </div>
+          <div id="comparison-chart-container" class="chart-container chart-container--comparison">
+            <canvas id="comparison-chart" aria-label="Production comparison chart"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="govuk-footer" role="contentinfo">
+    <div class="govuk-footer__container">
+      <p class="govuk-footer__text">
+        Data: <a href="https://www2.bgs.ac.uk/mineralsuk/statistics/worldStatistics.html" class="govuk-footer__link">BGS World Mineral Statistics</a>
+        via <a href="https://ogcapi.bgs.ac.uk" class="govuk-footer__link">OGC API</a>.
+        Dashboard supports UK Critical Minerals Strategy analysis.
+      </p>
+    </div>
+  </footer>
+
+  <!-- App entry point -->
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>

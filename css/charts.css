@@ -1,0 +1,52 @@
+/* Chart containers and styling */
+
+.chart-container {
+  position: relative;
+  width: 100%;
+  margin: 4px 0;
+}
+
+.chart-container--bar {
+  height: 240px;
+}
+
+.chart-container--pie {
+  height: 220px;
+}
+
+.chart-container--line {
+  height: 200px;
+}
+
+.chart-container--comparison {
+  height: 300px;
+}
+
+.chart-container canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+@media (max-width: 900px) {
+  .chart-container--bar {
+    height: 200px;
+  }
+
+  .chart-container--comparison {
+    height: 250px;
+  }
+}
+
+@media print {
+  .chart-container--bar {
+    height: 180px;
+  }
+
+  .chart-container--pie {
+    height: 160px;
+  }
+
+  .chart-container--comparison {
+    height: 200px;
+  }
+}

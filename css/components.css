@@ -1,0 +1,68 @@
+/* Loading overlay and shared components */
+
+/* Loading overlay */
+.loading-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--govuk-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  transition: opacity 0.5s ease;
+}
+
+.loading-overlay.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-content {
+  text-align: center;
+  max-width: 400px;
+  padding: 20px;
+}
+
+.loading-crown {
+  margin-bottom: 20px;
+}
+
+.loading-title {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 8px;
+}
+
+.loading-subtitle {
+  font-size: 16px;
+  color: var(--govuk-dark-grey);
+  margin: 0 0 24px;
+}
+
+.progress-bar-container {
+  width: 100%;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: var(--govuk-light-grey);
+  border: 1px solid var(--govuk-mid-grey);
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--govuk-blue);
+  width: 0;
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  font-size: 14px;
+  color: var(--govuk-dark-grey);
+  margin: 8px 0 0;
+}
