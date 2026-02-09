@@ -71,6 +71,60 @@ for (const [name, cfg] of Object.entries(MINERALS)) {
 }
 
 /**
+ * Maps BGS dashboard mineral name -> IEA data key(s).
+ * Used to look up IEA demand/supply data for each BGS mineral.
+ */
+export const BGS_TO_IEA = {
+  'Lithium':      { demand: 'Lithium',      supply: 'Lithium',             cleantech: 'Lithium' },
+  'Cobalt':       { demand: 'Cobalt',       supply: 'Cobalt',              cleantech: 'Cobalt' },
+  'Copper':       { demand: 'Copper',       supply: 'Copper',              cleantech: 'Copper' },
+  'Nickel':       { demand: 'Nickel',       supply: 'Nickel',              cleantech: 'Nickel' },
+  'Manganese':    { demand: null,           supply: null,                  cleantech: 'Manganese' },
+  'Tungsten':     { demand: null,           supply: null,                  cleantech: 'Tungsten' },
+  'Tin':          { demand: null,           supply: null,                  cleantech: 'Tin' },
+  'Graphite':     { demand: 'Graphite',     supply: 'Graphite',            cleantech: 'Battery-grade graphite' },
+  'Tantalum':     { demand: null,           supply: null,                  cleantech: 'Tantalum' },
+  'Niobium':      { demand: null,           supply: null,                  cleantech: 'Niobium' },
+  'Silicon':      { demand: null,           supply: null,                  cleantech: 'Silicon' },
+  'Titanium':     { demand: null,           supply: null,                  cleantech: 'Titanium' },
+  'Gallium':      { demand: null,           supply: null,                  cleantech: 'Gallium' },
+  'Germanium':    { demand: null,           supply: null,                  cleantech: 'Germanium' },
+  'Magnesium':    { demand: null,           supply: null,                  cleantech: 'Magnesium' },
+  'PGMs':         { demand: null,           supply: null,                  cleantech: 'PGMs' },
+  'Rare Earths':  { demand: 'Rare Earth Elements', supply: 'Rare Earth Elements', cleantech: 'Total REE' },
+  'Vanadium':     { demand: null,           supply: null,                  cleantech: 'Vanadium' },
+  'Tellurium':    { demand: null,           supply: null,                  cleantech: 'Tellurium' },
+  'Indium':       { demand: null,           supply: null,                  cleantech: 'Indium' },
+  'Bismuth':      { demand: null,           supply: null,                  cleantech: null },
+  'Antimony':     { demand: null,           supply: null,                  cleantech: null },
+  'Beryllium':    { demand: null,           supply: null,                  cleantech: null },
+};
+
+/**
+ * IEA scenario display names and colours.
+ */
+export const IEA_SCENARIOS = {
+  'STEPS': { label: 'Stated Policies (STEPS)', colour: '#1d70b8' },
+  'APS':   { label: 'Announced Pledges (APS)',  colour: '#f47738' },
+  'NZE':   { label: 'Net Zero 2050 (NZE)',      colour: '#00703c' },
+};
+
+/**
+ * Technology colours for charts.
+ */
+export const TECH_COLOURS = {
+  'Solar PV':                            '#f4d03f',
+  'Wind':                                '#5694ca',
+  'Other low emissions power generation': '#85994b',
+  'Low emissions power generation':       '#85994b',
+  'Electric vehicles':                   '#d4351c',
+  'Grid battery storage':                '#6f72af',
+  'Electricity networks':                '#f47738',
+  'Hydrogen technologies':               '#28a197',
+  'Other uses':                          '#b1b4b6',
+};
+
+/**
  * GOV.UK colour palette
  */
 export const GOVUK = {

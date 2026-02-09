@@ -1,0 +1,92 @@
+/* Demand Outlook view layout */
+
+.demand-view__title,
+.supply-view__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--govuk-black);
+  margin: 0 0 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 4px solid var(--govuk-blue);
+  padding-bottom: 8px;
+}
+
+.demand-view__sankey-section {
+  margin-bottom: 24px;
+}
+
+.sankey-container {
+  width: 100%;
+  min-height: 500px;
+  border: 1px solid var(--govuk-mid-grey);
+  background: var(--govuk-white);
+  overflow: visible;
+}
+
+.demand-view__comparison-section {
+  margin-bottom: 24px;
+}
+
+.chart-container--scenario {
+  height: 350px;
+}
+
+.demand-view__table-section {
+  margin-bottom: 24px;
+}
+
+/* Growth table */
+.growth-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.growth-table th,
+.growth-table td {
+  padding: 8px 10px;
+  text-align: left;
+  border-bottom: 1px solid var(--govuk-light-grey);
+}
+
+.growth-table th {
+  font-weight: 700;
+  background: var(--govuk-light-grey);
+  border-bottom: 2px solid var(--govuk-mid-grey);
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.growth-table th:hover {
+  background: #e8e6e5;
+}
+
+.growth-table td.numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.growth-table tbody tr:hover {
+  background: #f8f8f8;
+}
+
+.growth-multiplier--high {
+  color: var(--govuk-red);
+  font-weight: 700;
+}
+
+.growth-multiplier--medium {
+  color: #b58105;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .chart-container--scenario {
+    height: 280px;
+  }
+  .sankey-container {
+    min-height: 300px;
+  }
+}

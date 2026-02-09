@@ -1,14 +1,16 @@
 /**
  * PDF export via jsPDF.
  * Serialises SVG map to PNG via canvas, includes charts and data table.
+ * Context-aware: exports different content per active view.
  */
 
 import { getState } from '../state.js';
 import { getTopProducers, getWorldTotal, getCrossMineralScores } from '../api/dataCache.js';
 import { formatNumber } from '../utils/formatters.js';
-import { MINERALS, ALL_MINERALS_KEY } from '../config.js';
+import { MINERALS, ALL_MINERALS_KEY, IEA_SCENARIOS } from '../config.js';
 import { getMapSVG } from '../map/d3Map.js';
 import { getChart } from '../charts/chartManager.js';
+import { isIEAReady } from '../api/ieaDataLoader.js';
 
 /**
  * Export a multi-page PDF report.
@@ -21,74 +23,21 @@ export async function exportPDF() {
   }
 
   try {
+    const activeView = getState('activeView');
     const mineral = getState('selectedMineral');
     const year = getState('selectedYear');
+    const scenario = getState('selectedScenario');
 
     const doc = new jsPDF('landscape', 'mm', 'a4');
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Page 1: Title and map
-    drawHeader(doc, pageWidth);
-
-    doc.setTextColor(11, 12, 12);
-    doc.setFontSize(16);
-
-    if (mineral === ALL_MINERALS_KEY) {
-      doc.text(`Critical Minerals Overview — Top Producing Countries — ${year}`, 15, 38);
+    if (activeView === 'demand') {
+      await exportDemandPDF(doc, pageWidth, pageHeight, scenario);
+    } else if (activeView === 'supply') {
+      await exportSupplyPDF(doc, pageWidth, pageHeight, scenario);
     } else {
-      doc.text(`${mineral} Production — ${year}`, 15, 38);
-    }
-
-    // Embed SVG map as PNG
-    const mapSvg = getMapSVG();
-    if (mapSvg) {
-      try {
-        const mapPng = await svgToPNG(mapSvg, 1600, 900);
-        const imgWidth = pageWidth - 30;
-        const imgHeight = (900 / 1600) * imgWidth;
-        doc.addImage(mapPng, 'PNG', 15, 45, imgWidth, Math.min(imgHeight, pageHeight - 55));
-      } catch (e) {
-        doc.setFontSize(12);
-        doc.text('Map capture unavailable', 15, 55);
-      }
-    }
-
-    // Page 2: Charts
-    doc.addPage();
-    drawHeader(doc, pageWidth);
-
-    // Bar chart
-    const barChart = getChart('bar-chart');
-    if (barChart) {
-      try {
-        const barImg = barChart.toBase64Image('image/png', 1);
-        doc.addImage(barImg, 'PNG', 15, 30, (pageWidth - 30) / 2, 80);
-      } catch (e) { /* skip */ }
-    }
-
-    // Pie chart
-    const pieChart = getChart('pie-chart');
-    if (pieChart) {
-      try {
-        const pieImg = pieChart.toBase64Image('image/png', 1);
-        doc.addImage(pieImg, 'PNG', pageWidth / 2 + 5, 30, (pageWidth - 30) / 2, 80);
-      } catch (e) { /* skip */ }
-    }
-
-    // Page 3: Top producers table
-    doc.addPage();
-    drawHeader(doc, pageWidth);
-
-    doc.setTextColor(11, 12, 12);
-    doc.setFontSize(14);
-
-    if (mineral === ALL_MINERALS_KEY) {
-      doc.text(`Top Producing Countries (Dominance Score) — ${year}`, 15, 33);
-      renderOverviewTable(doc, year, pageWidth, pageHeight);
-    } else {
-      doc.text(`Top Producers — ${mineral} (${year})`, 15, 33);
-      renderMineralTable(doc, mineral, year, pageWidth, pageHeight);
+      await exportFactsheetPDF(doc, pageWidth, pageHeight, mineral, year, scenario);
     }
 
     // Footer on each page
@@ -97,18 +46,149 @@ export async function exportPDF() {
       doc.setPage(i);
       doc.setFontSize(8);
       doc.setTextColor(80, 90, 95);
-      doc.text(
-        `Source: BGS World Mineral Statistics | Page ${i} of ${pageCount}`,
-        15, pageHeight - 8
-      );
+      const source = isIEAReady()
+        ? 'Source: BGS World Mineral Statistics & IEA Critical Minerals Data Explorer (CC BY 4.0)'
+        : 'Source: BGS World Mineral Statistics';
+      doc.text(`${source} | Page ${i} of ${pageCount}`, 15, pageHeight - 8);
     }
 
-    const safeName = mineral === ALL_MINERALS_KEY ? 'Overview' : mineral;
+    const safeName = activeView === 'factsheet'
+      ? (mineral === ALL_MINERALS_KEY ? 'Overview' : mineral)
+      : activeView === 'demand' ? 'Demand_Outlook' : 'Supply_Risk';
     const filename = `UK_Critical_Minerals_${safeName}_${year}.pdf`;
     doc.save(filename);
   } catch (err) {
     console.error('PDF export failed:', err);
     alert('PDF export failed. See console for details.');
+  }
+}
+
+async function exportFactsheetPDF(doc, pageWidth, pageHeight, mineral, year, scenario) {
+  // Page 1: Title and map
+  drawHeader(doc, pageWidth);
+
+  doc.setTextColor(11, 12, 12);
+  doc.setFontSize(16);
+
+  if (mineral === ALL_MINERALS_KEY) {
+    doc.text(`Critical Minerals Overview — Top Producing Countries — ${year}`, 15, 38);
+  } else {
+    doc.text(`${mineral} Production — ${year}`, 15, 38);
+  }
+
+  // Embed SVG map as PNG
+  const mapSvg = getMapSVG();
+  if (mapSvg) {
+    try {
+      const mapPng = await svgToPNG(mapSvg, 1600, 900);
+      const imgWidth = pageWidth - 30;
+      const imgHeight = (900 / 1600) * imgWidth;
+      doc.addImage(mapPng, 'PNG', 15, 45, imgWidth, Math.min(imgHeight, pageHeight - 55));
+    } catch (e) {
+      doc.setFontSize(12);
+      doc.text('Map capture unavailable', 15, 55);
+    }
+  }
+
+  // Page 2: Charts
+  doc.addPage();
+  drawHeader(doc, pageWidth);
+
+  const barChart = getChart('bar-chart');
+  if (barChart) {
+    try {
+      const barImg = barChart.toBase64Image('image/png', 1);
+      doc.addImage(barImg, 'PNG', 15, 30, (pageWidth - 30) / 2, 80);
+    } catch (e) { /* skip */ }
+  }
+
+  const pieChart = getChart('pie-chart');
+  if (pieChart) {
+    try {
+      const pieImg = pieChart.toBase64Image('image/png', 1);
+      doc.addImage(pieImg, 'PNG', pageWidth / 2 + 5, 30, (pageWidth - 30) / 2, 80);
+    } catch (e) { /* skip */ }
+  }
+
+  // IEA charts on factsheet
+  if (isIEAReady() && mineral !== ALL_MINERALS_KEY) {
+    const techChart = getChart('tech-breakdown-chart');
+    const supplyChart = getChart('supply-concentration-chart');
+    if (techChart || supplyChart) {
+      doc.addPage();
+      drawHeader(doc, pageWidth);
+      doc.setTextColor(11, 12, 12);
+      doc.setFontSize(14);
+      doc.text(`IEA Projections — ${mineral} (${IEA_SCENARIOS[scenario]?.label || scenario})`, 15, 33);
+
+      if (techChart) {
+        try {
+          const img = techChart.toBase64Image('image/png', 1);
+          doc.addImage(img, 'PNG', 15, 40, (pageWidth - 30) / 2, 80);
+        } catch (e) { /* skip */ }
+      }
+      if (supplyChart) {
+        try {
+          const img = supplyChart.toBase64Image('image/png', 1);
+          doc.addImage(img, 'PNG', pageWidth / 2 + 5, 40, (pageWidth - 30) / 2, 80);
+        } catch (e) { /* skip */ }
+      }
+    }
+  }
+
+  // Data table page
+  doc.addPage();
+  drawHeader(doc, pageWidth);
+  doc.setTextColor(11, 12, 12);
+  doc.setFontSize(14);
+
+  if (mineral === ALL_MINERALS_KEY) {
+    doc.text(`Top Producing Countries (Dominance Score) — ${year}`, 15, 33);
+    renderOverviewTable(doc, year, pageWidth, pageHeight);
+  } else {
+    doc.text(`Top Producers — ${mineral} (${year})`, 15, 33);
+    renderMineralTable(doc, mineral, year, pageWidth, pageHeight);
+  }
+}
+
+async function exportDemandPDF(doc, pageWidth, pageHeight, scenario) {
+  drawHeader(doc, pageWidth);
+  doc.setTextColor(11, 12, 12);
+  doc.setFontSize(16);
+  doc.text(`Demand Outlook — ${IEA_SCENARIOS[scenario]?.label || scenario}`, 15, 38);
+
+  // Scenario comparison chart
+  const scenarioChart = getChart('scenario-comparison-chart');
+  if (scenarioChart) {
+    try {
+      const img = scenarioChart.toBase64Image('image/png', 1);
+      doc.addImage(img, 'PNG', 15, 45, pageWidth - 30, 100);
+    } catch (e) { /* skip */ }
+  }
+}
+
+async function exportSupplyPDF(doc, pageWidth, pageHeight, scenario) {
+  drawHeader(doc, pageWidth);
+  doc.setTextColor(11, 12, 12);
+  doc.setFontSize(16);
+  doc.text(`Supply & Risk Assessment — ${IEA_SCENARIOS[scenario]?.label || scenario}`, 15, 38);
+
+  const gapChart = getChart('supply-demand-gap-chart');
+  if (gapChart) {
+    try {
+      const img = gapChart.toBase64Image('image/png', 1);
+      doc.addImage(img, 'PNG', 15, 45, pageWidth - 30, 100);
+    } catch (e) { /* skip */ }
+  }
+
+  const dominanceChart = getChart('country-dominance-chart');
+  if (dominanceChart) {
+    doc.addPage();
+    drawHeader(doc, pageWidth);
+    try {
+      const img = dominanceChart.toBase64Image('image/png', 1);
+      doc.addImage(img, 'PNG', 15, 30, pageWidth - 30, 100);
+    } catch (e) { /* skip */ }
   }
 }
 

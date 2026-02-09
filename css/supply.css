@@ -1,0 +1,73 @@
+/* Supply & Risk view layout */
+
+.supply-view__gap-section {
+  margin-bottom: 24px;
+}
+
+.chart-container--gap {
+  height: 350px;
+}
+
+.supply-view__bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.supply-view__heatmap-section,
+.supply-view__dominance-section {
+  min-height: 300px;
+}
+
+.chart-container--dominance {
+  height: 350px;
+}
+
+/* Concentration heatmap (D3 SVG) */
+.heatmap-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.heatmap-cell {
+  stroke: var(--govuk-white);
+  stroke-width: 1;
+}
+
+.heatmap-label {
+  font-size: 11px;
+  font-family: var(--govuk-font);
+  fill: var(--govuk-black);
+}
+
+.heatmap-axis text {
+  font-size: 11px;
+  font-family: var(--govuk-font);
+}
+
+/* HHI legend */
+.hhi-legend {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+  margin-top: 8px;
+  color: var(--govuk-dark-grey);
+}
+
+.hhi-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.hhi-legend__swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 2px;
+}
+
+@media (max-width: 900px) {
+  .supply-view__bottom-grid {
+    grid-template-columns: 1fr;
+  }
+}

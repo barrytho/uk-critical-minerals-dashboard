@@ -8,11 +8,14 @@ const state = {
   selectedYear: 2023,
   selectedCountry: null,
   activeTab: 'table',            // 'table' | 'comparison'
+  activeView: 'factsheet',       // 'factsheet' | 'demand' | 'supply'
+  selectedScenario: 'STEPS',     // 'STEPS' | 'APS' | 'NZE'
   comparisonItems: [],           // Array of country ISO3 codes
   statisticType: 'Production',
   isLoading: true,
   loadProgress: 0,
-  dataReady: false
+  dataReady: false,
+  ieaDataReady: false
 };
 
 const listeners = {};

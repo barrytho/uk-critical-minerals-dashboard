@@ -74,10 +74,10 @@ html, body {
 }
 
 .govuk-header__actions {
-  margin-left: auto;
   display: flex;
   gap: 6px;
   flex-shrink: 0;
+  margin-left: 12px;
 }
 
 /* Buttons */
@@ -179,6 +179,11 @@ html, body {
 a:focus, button:focus, select:focus, input:focus {
   outline: 3px solid var(--govuk-yellow);
   outline-offset: 0;
+}
+
+/* Scenario toggle in header */
+.govuk-header__scenario {
+  margin-left: auto;
 }
 
 /* Screen reader only */
